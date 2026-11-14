@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>校服展示盒 · 磁铁触发灯光装置</title>
+<style>
+  :root {
+    --ink: #1d1d1f;
+    --muted: #6e6e73;
+    --line: #e5e5ea;
+    --bg: #ffffff;
+    --soft: #f5f5f7;
+    --amber: #ffb300;
+    --red: #e53935;
+    --blue: #1e88e5;
+    --green: #43a047;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: "PingFang SC", "Hiragino Sans GB", -apple-system, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px; }
+  header { padding: 64px 0 40px; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-size: 13px; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+  h1 { font-size: 40px; line-height: 1.2; margin: 12px 0 14px; letter-spacing: -.5px; }
+  .lede { font-size: 18px; color: var(--muted); max-width: 720px; margin: 0; }
+  .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; }
+  .tag { font-size: 13px; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; color: var(--muted); }
+  section { padding: 52px 0; border-bottom: 1px solid var(--line); }
+  h2 { font-size: 24px; margin: 0 0 8px; }
+  .sub { color: var(--muted); margin: 0 0 28px; font-size: 15px; }
+
+  /* demo */
+  .demo { display: flex; gap: 36px; align-items: center; flex-wrap: wrap; }
+  .stage { perspective: 900px; }
+  .box {
+    position: relative; width: 300px; height: 220px; border-radius: 14px;
+    background: linear-gradient(160deg, #2c2c2e, #1a1a1c);
+    padding: 14px; box-shadow: 0 24px 50px -20px rgba(0,0,0,.55);
+    transition: transform .5s ease;
+  }
+  .inner {
+    position: relative; width: 100%; height: 100%; border-radius: 6px;
+    background: #f7f5f0; overflow: hidden;
+  }
+  .uniform {
+    position: absolute; inset: 12% 16%; border-radius: 6px;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f1ec 60%, #ffffff 100%);
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,.04);
+  }
+  .stripe {
+    position: absolute; left: 16%; right: 16%; top: 58%; height: 16%;
+    background: var(--red); opacity: .85;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  }
+  .badge {
+    position: absolute; right: 26%; top: 30%; width: 44px; height: 44px;
+    border-radius: 50%; background: var(--red); color: #fff;
+    display: grid; place-items: center; font-size: 15px; font-weight: 700;
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.25);
+  }
+  .light {
+    position: absolute; inset: 0; opacity: 0; transition: opacity .45s ease;
+    background:
+      radial-gradient(circle at 50% 15%, rgba(255,214,130,.95), transparent 55%),
+      radial-gradient(circle at 15% 50%, rgba(255,214,130,.75), transparent 50%),
+      radial-gradient(circle at 85% 50%, rgba(255,214,130,.75), transparent 50%),
+      linear-gradient(180deg, rgba(255,196,90,.55), rgba(255,176,32,.18));
+    mix-blend-mode: multiply;
+  }
+  .box.on .light { opacity: 1; }
+  .box.on { transform: rotateX(4deg) scale(1.01); }
+  .magnet {
+    position: absolute; right: 20%; top: 24%; width: 52px; height: 52px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff6b6b, #c62828);
+    box-shadow: 0 8px 18px -6px rgba(198,40,40,.8);
+    opacity: 0; transform: translate(40px, -40px) rotate(-25deg);
+    transition: all .45s cubic-bezier(.2,.9,.3,1.4);
+    display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 700;
+  }
+  .box.on .magnet { opacity: 1; transform: translate(0,0) rotate(0); }
+
+  .controls { flex: 1; min-width: 240px; }
+  .btn {
+    appearance: none; border: 0; cursor: pointer; font: inherit; font-weight: 600;
+    padding: 13px 22px; border-radius: 12px; background: var(--ink); color: #fff;
+    transition: transform .15s ease, background .15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .hint { color: var(--muted); font-size: 14px; margin-top: 14px; }
+
+  /* cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .card h3 { margin: 0 0 8px; font-size: 17px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+  .num { display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%;
+         background: var(--soft); font-size: 14px; font-weight: 700; margin-right: 8px; }
+
+  figure { margin: 0; }
+  figure img { width: 100%; border: 1px solid var(--line); border-radius: 14px; display: block; }
+  figcaption { color: var(--muted); font-size: 13.5px; margin-top: 10px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { text-align: left; padding: 11px 12px; border-bottom: 1px solid var(--line); }
+  th { color: var(--muted); font-weight: 500; font-size: 13px; letter-spacing: .04em; }
+  td code { background: var(--soft); padding: 2px 6px; border-radius: 5px; font-size: 13px; }
+
+  .status { display: flex; flex-direction: column; gap: 10px; }
+  .row { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; }
+  .dot { flex: 0 0 10px; height: 10px; border-radius: 50%; margin-top: 8px; }
+  .done .dot { background: var(--green); }
+  .doing .dot { background: var(--amber); }
+  .todo .dot { background: #c7c7cc; }
+  .row p { margin: 0; font-size: 14.5px; }
+  .row small { color: var(--muted); }
+
+  footer { padding: 36px 0 64px; color: var(--muted); font-size: 14px; }
+  a { color: var(--blue); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  @media (max-width: 640px) {
+    h1 { font-size: 30px; }
+    header { padding-top: 44px; }
+    .box { width: 100%; max-width: 320px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Hardware · 5V · One-off build</div>
+    <h1>校服展示盒<br>磁铁触发灯光装置</h1>
+    <p class="lede">把一枚冰箱贴贴到盒面的感应区，盒内的灯带亮起；拿走磁铁，灯灭。不按键、不联网、不改原灯带。</p>
+    <div class="tags">
+      <span class="tag">5V 低压</span>
+      <span class="tag">磁簧 + MOSFET</span>
+      <span class="tag">单件制作</span>
+      <span class="tag">保留原灯带</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>交互</h2>
+    <p class="sub">只有一个动作，一个结果。</p>
+    <div class="demo">
+      <div class="stage">
+        <div class="box" id="box">
+          <div class="inner">
+            <div class="uniform"></div>
+            <div class="stripe"></div>
+            <div class="badge">X</div>
+            <div class="light"></div>
+            <div class="magnet" id="magnet">贴</div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="toggle">贴上冰箱贴</button>
+        <p class="hint">点一下按钮，模拟把冰箱贴放到盒面。灯亮起，拿走就熄灭。</p>
+        <p class="hint">不做开盖联动、不做延时熄灭、不做调光——逻辑越少，越不容易坏。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>原理</h2>
+    <p class="sub">磁簧只负责把 5V 接到栅极，灯带电流走 MOSFET 的 D→S，不经过磁簧。</p>
+    <figure>
+      <img src="images/wiring.png" alt="整条回路接线图：充电宝、触摸开关、磁簧、MOS 板、灯带">
+      <figcaption>整条回路接线图。红色为 5V，黑色为 GND，蓝色为栅极信号。</figcaption>
+    </figure>
+    <div class="grid" style="margin-top:24px">
+      <div class="card">
+        <h3><span class="num">1</span>磁簧</h3>
+        <p>GPS-14A 常开塑封型。磁铁靠近时闭合，移开时断开。对磁场方向敏感，尽量垂直盒面安装。</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">2</span>10k 下拉</h3>
+        <p>焊在栅极和源极之间。没有它，磁簧断开后栅极悬空，MOSFET 会保持导通，灯关不掉。</p>
+      </div>
+      <div class="card">
+        <h3><span class="num">3</span>AO3400</h3>
+        <p>SOT-23 逻辑电平 N 沟道 MOSFET。5V 栅压即可完全导通，带 2A 灯带余量充足。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>关键细节</h2>
+    <p class="sub">三个最容易翻车的地方。</p>
+    <div class="grid">
+      <figure>
+        <img src="images/sot23-pinout.png" alt="AO3400 引脚识别">
+        <figcaption>引脚：1 = G，2 = S，3 = D。印字朝上，单脚在上，左 G 右 S。</figcaption>
+      </figure>
+      <figure>
+        <img src="images/pulldown-10k.png" alt="10k 下拉电阻焊法">
+        <figcaption>10k 跨在 G、S 两个孔之间，焊完用电阻档测应约 10kΩ。</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>物料</h2>
+    <p class="sub">单件成本约 50–80 元，不含工具与电源。</p>
+    <table>
+      <thead><tr><th>元件</th><th>规格</th><th>数量</th></tr></thead>
+      <tbody>
+        <tr><td>磁簧开关</td><td>GPS-14A 常开塑封 2.7×14mm</td><td>10（挑选）</td></tr>
+        <tr><td>钕磁铁</td><td>φ15×3 N35</td><td>2</td></tr>
+        <tr><td>MOSFET</td><td>AO3400（SOT-23，A09T）</td><td>1</td></tr>
+        <tr><td>下拉电阻</td><td>10kΩ 1/4W</td><td>1</td></tr>
+        <tr><td>灯带</td><td>5V COB 2m 3000K CRI≥90</td><td>1</td></tr>
+        <tr><td>保险丝</td><td>PPTC 1.1A / 2A / 3A</td><td>各 1</td></tr>
+        <tr><td>电源</td><td>5V 充电宝</td><td>1</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>进度</h2>
+    <p class="sub">电路已跑通，剩真实材料适配与装配。</p>
+    <div class="status">
+      <div class="row done"><span class="dot"></span><p>电路链路验证 <small>— 磁铁靠近亮，拿走灭</small></p></div>
+      <div class="row done"><span class="dot"></span><p>隔布 + 3mm 亚克力触发 <small>— 吸合距离约 2cm</small></p></div>
+      <div class="row done"><span class="dot"></span><p>10k 下拉与焊点验证 <small>— 实测 10kΩ</small></p></div>
+      <div class="row doing"><span class="dot"></span><p>现成冰箱贴 + 真实盒体测试 <small>— 决定是否定制磁铁</small></p></div>
+      <div class="row todo"><span class="dot"></span><p>量电流、装保险丝</p></div>
+      <div class="row todo"><span class="dot"></span><p>确定磁簧安装位置与感应区标记</p></div>
+      <div class="row todo"><span class="dot"></span><p>装配、走线、开合盖测试</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>文档</h2>
+    <p class="sub">完整说明与可打印的实验记录表。</p>
+    <div class="grid">
+      <div class="card">
+        <h3><a href="https://github.com/Vic-Song/uniform-lightbox/blob/main/README.md">README.md</a></h3>
+        <p>背景、原理、BOM、制作步骤、实测数据与待办。</p>
+      </div>
+      <div class="card">
+        <h3><a href="https://github.com/Vic-Song/uniform-lightbox/blob/main/EXPERIMENT.md">EXPERIMENT.md</a></h3>
+        <p>实验记录表：磁簧灵敏度、穿透测试、电流与验收。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    5V 低压供电 · 不接入市电 · 保留原灯带
+  </div>
+</footer>
+
+<script>
+  const box = document.getElementById('box');
+  const btn = document.getElementById('toggle');
+  btn.addEventListener('click', () => {
+    box.classList.toggle('on');
+    btn.textContent = box.classList.contains('on') ? '拿走冰箱贴' : '贴上冰箱贴';
+  });
+</script>
+</body>
+</html>
